@@ -7,7 +7,7 @@ all:
 run:
 	java -Dproject_home=${DIR} \
 	-classpath target/test-classes:target/quickSel-0.1-jar-with-dependencies.jar \
-	-Xmx32g -Xms1g edu.illinois.quicksel.experiments.Test dom1000 skew1.0_corr1.0 vood 1000 1000000
+	-Xmx256g -Xms32g edu.illinois.quicksel.experiments.Test isomer dom1000 skew1.0_corr1.0 vood 1000 1000000
 
 exp_speed:
 	java -Dproject_home=${DIR} \
