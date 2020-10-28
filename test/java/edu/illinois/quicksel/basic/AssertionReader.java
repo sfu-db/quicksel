@@ -28,8 +28,10 @@ public class AssertionReader {
 
   private static Double checkInBoundary(Double x, int boundary) {
     if (x < 0) {
+      System.out.println(String.format("Not in boundary! %f < 0", x));
       x = 0.0;
     } else if (x > boundary) {
+      System.out.println(String.format("Not in boundary! %f > %d", x, boundary));
       x = (double)boundary;
     }
     return x/boundary;
@@ -126,6 +128,7 @@ public class AssertionReader {
 
   public static Pair<Vector<Assertion>, Vector<Assertion>> 
   readAssertion(String assertionFile, String permenantAssertionFile) throws IOException {
+    System.out.println("Assertion File: " + assertionFile);
     BufferedReader br = new BufferedReader(
         new FileReader(String.format("%s/%s", resourceDir, assertionFile)));
     String line;
@@ -136,11 +139,15 @@ public class AssertionReader {
     
     while ((line = br.readLine()) != null) {
       // use comma as separator
+      // System.out.println(line);
       String[] data = line.split(",");
       HashMap<Integer, Pair<Double, Double>> r1 = new HashMap<>();
       int columns = (data.length - 1) / 2;
       for (int i = 0; i < columns;i++) {
         double left, right;
+        if (Double.valueOf(data[i*2]) > 1 || Double.valueOf(data[i*2+1]) > 1) {
+          System.out.println("Line: " + line);
+        }
         left = checkInBoundary(Double.valueOf(data[i*2]), 1);
         right = checkInBoundary(Double.valueOf(data[i*2+1]), 1);
         r1.put(i, new ImmutablePair<>(left, right));
@@ -151,9 +158,11 @@ public class AssertionReader {
     
     br.close();
     
+    System.out.println("Permenant Assertion File: " + permenantAssertionFile);
     br = new BufferedReader(new FileReader(String.format("%s/%s", resourceDir, permenantAssertionFile)));
     while ((line = br.readLine()) != null) {
       // use comma as separator
+      // System.out.println(line);
       String[] data = line.split(",");
       HashMap<Integer, Pair<Double, Double>> r1 = new HashMap<>();
       int columns = (data.length - 1) / 2;

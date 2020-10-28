@@ -22,32 +22,35 @@ public class Test{
         String workload = args[3];
         int train_num = Integer.parseInt(args[4]);
         long rows = Long.parseLong(args[5]);
+        int var_num = Integer.parseInt(args[6]);
         System.out.println("Project Directory : "+ System.getProperty("user.dir"));
-        System.out.println(String.format("method: %s, dataset: %s, version: %s, workload: %s, train_num: %d, row_num: %d", method, dataset, version, workload, train_num, rows));
+        System.out.println(String.format("method: %s, dataset: %s, version: %s, workload: %s, train_num: %d, row_num: %d, var_num: %d", method, dataset, version, workload, train_num, rows, var_num));
 
-        Pair<Vector<Assertion>, Vector<Assertion>> assertionPair = AssertionReader.readAssertion(String.format("%s/quicksel/%s-%s-train.csv", dataset, workload, version));
+        Pair<Vector<Assertion>, Vector<Assertion>> assertionPair = AssertionReader.readAssertion(
+            String.format("%s/quicksel/%s-%s-train.csv", dataset, workload, version),
+            String.format("%s/quicksel/%s-permanent.csv", dataset, version)
+        );
         Vector<Assertion> all_train_assertions = assertionPair.getLeft();
         Vector<Assertion> permanent_assertions = assertionPair.getRight();
 
         int columns = all_train_assertions.get(0).query.getConstraints().size();
         System.out.println(String.format("Dataset get %d columns", columns));
-        // add default permanent assertion
-        HashMap<Integer, Pair<Double, Double>> r1 = new HashMap<>();
-        for (int i = 0; i < columns; ++i) {
-            r1.put(i, Pair.of(0.0, 1.0));
-        }
-        Assertion assertion = new Assertion(r1, 1.0);
-        permanent_assertions.add(assertion);
-
+        // // add default permanent assertion
+        // HashMap<Integer, Pair<Double, Double>> r1 = new HashMap<>();
+        // for (int i = 0; i < columns; ++i) {
+        //     r1.put(i, Pair.of(0.0, 1.0));
+        // }
+        // Assertion assertion = new Assertion(r1, 1.0);
+        // permanent_assertions.add(assertion);
 
         Vector<Assertion> test_assertions = AssertionReader.readAssertion(String.format("%s/quicksel/%s-%s-test.csv", dataset, workload, version)).getLeft();
 
         System.out.println("# training set: " + all_train_assertions.size());
         System.out.println("# test set: " + test_assertions.size());
         System.out.println("# extra permanent query:" + permanent_assertions.size());
-        for (Assertion a: permanent_assertions) {
-            System.out.println(a.toString());
-        }
+        // for (Assertion a: permanent_assertions) {
+        //     System.out.println(a.toString());
+        // }
 
         Vector<Assertion> train_assertions = new Vector<>(all_train_assertions.subList(0, train_num));
         System.out.println("Dataset and query set generations done.\n");
@@ -55,12 +58,12 @@ public class Test{
         String result_file = String.format("../output/result/%s/%s-%s-%s-version=%s;train=%d.csv", dataset, version, workload, method, version, train_num);
         if (method.equals("quicksel")) {
             System.out.println("QuickSel test");
-            quickSelTest(permanent_assertions, train_assertions, test_assertions, columns, rows, result_file);
+            quickSelTest(permanent_assertions, train_assertions, test_assertions, columns, rows, var_num, result_file);
             System.out.println("");
         }
         else if (method.equals("isomer")) {
             System.out.println("Isomer test");
-            quickSelTest(permanent_assertions, train_assertions, test_assertions, columns, rows, result_file);
+            isomerTest(permanent_assertions, train_assertions, test_assertions, columns, rows, result_file);
             System.out.println("");
         }
         else {
@@ -72,11 +75,13 @@ public class Test{
         Vector<Assertion> permanent_assertions,
         Vector<Assertion> train_assertions,
         List<Assertion> test_assertions,
-        int columns, long rows,
+        int columns, long rows, int var_num,
         String result_file) throws IOException{
 
         Pair<Hyperrectangle, Double> range_freq = computeMinMaxRange(columns);
         QuickSel quickSel = new QuickSel(range_freq.getLeft(), range_freq.getRight());
+        quickSel.setEnforcedVarCount(var_num);
+        // quickSel.setSubpopulationModel("kmeans");
 
         for (Assertion a: permanent_assertions) {
             quickSel.addPermanentAssertion(a);
