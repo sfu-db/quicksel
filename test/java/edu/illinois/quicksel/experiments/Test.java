@@ -119,6 +119,7 @@ public class Test{
         double squared_err_sum = 0.0;
         double max_qerror = 0.0;
         double qerror_sum = 0.0;
+        double latency_sum = 0.0;
         for (int i = 0; i < test_assertions.size(); ++i) {
             Assertion q = test_assertions.get(i);
             long start_time = System.nanoTime();
@@ -134,6 +135,7 @@ public class Test{
                 max_qerror = qerror;
             }
             qerror_sum += qerror;
+            latency_sum += (end_time-start_time)/1e6;
 
             csvWriter.append(String.format("%d,%.6f,%.1f,%.1f,%.6f\n", i, qerror, est_card, card, (end_time-start_time)/1e6));
             csvWriter.flush();
@@ -145,7 +147,9 @@ public class Test{
         csvWriter.close();
         double rms_err = Math.sqrt(squared_err_sum / test_assertions.size());
         double qerror_mean = qerror_sum / test_assertions.size(); 
+        double latency_mean = latency_sum / test_assertions.size();
 
+        System.out.println(String.format("Latency mean: %.5f", latency_mean));
         System.out.println(String.format("Q-Error: max=%.5f, mean=%.5f", max_qerror, qerror_mean));
         System.out.println(String.format("RMS error: %.5f\n", rms_err));
     }
