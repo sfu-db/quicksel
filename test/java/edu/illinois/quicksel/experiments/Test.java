@@ -101,6 +101,7 @@ public class Test{
 
         //write time
         System.out.println(String.format("Insertion time: %.3f, Optimization time: %.3f", (time2 - time1) / 1e9, (time3 - time2) / 1e9));
+        System.out.println(String.format("Total construction time: %.4f mins", (time3 - time1) / 1e9 / 60));
         double per_sel = Math.max(0, quickSel.answer(permanent_assertions.get(0).query));
         System.out.println(String.format("Predict %.1f for permanent assertion", per_sel));
 
